@@ -48,6 +48,25 @@ services:
     depends_on:
       - kafka
 
+  postgres:
+    image: postgres:15
+    networks:
+      - kafka-network
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    volumes:
+      - ./postgres_init.sql:/docker-entrypoint-initdb.d/postgres_init.sql
+      - postgres-data:/var/lib/postgresql/data
+    restart: always
+
+
+
+
+
+
   #  Built services
   order:
     build:
@@ -60,8 +79,12 @@ services:
       - "8081:8081"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservices_demo_db_order
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
       - kafka
+      - postgres
 
   inventory:
     build:
@@ -74,8 +97,12 @@ services:
       - "8082:8082"
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/microservices_demo_db_inventory
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
       - kafka
+      - postgres
 
 # Configurations
 networks:
@@ -86,3 +113,4 @@ volumes:
   kafka-data:
   zookeeper-data:
   zookeeper-log:
+  postgres-data:
