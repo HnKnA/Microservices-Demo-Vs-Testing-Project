@@ -1,4 +1,6 @@
 spring:
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
   application:
     name: inventory
   kafka:
@@ -11,7 +13,7 @@ spring:
         spring.json.trusted.packages: '*'
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:

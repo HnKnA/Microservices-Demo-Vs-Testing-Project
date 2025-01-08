@@ -35,6 +35,40 @@ services:
       - zookeeper
     restart: always
 
+  kafka-connect:
+    image: debezium/connect:2.7.3.Final
+    networks:
+      - kafka-network
+    ports:
+      - "8083:8083"    # Kafka Connect REST API
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_status
+
+      # Use JSON converters (you can also use Avro if you'd like)
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+      # By default, Debezium connector plugins live in /kafka/connect
+      # This image already includes Debezium for PostgreSQL
+      PLUGIN_PATH: /kafka/libs
+
+      # Kafka Connect internal logging:
+      #   https://docs.confluent.io/platform/current/connect/logging.html
+      #   (Adjust to your preference)
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+
+    depends_on:
+      - kafka
+      - zookeeper
+      - postgres
+    restart: always
+
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     networks:
@@ -57,6 +91,7 @@ services:
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+
     volumes:
       - ./postgres_init.sql:/docker-entrypoint-initdb.d/postgres_init.sql
       - postgres-data:/var/lib/postgresql/data

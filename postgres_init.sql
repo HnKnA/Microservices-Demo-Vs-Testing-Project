@@ -1,3 +1,6 @@
+ALTER SYSTEM SET wal_level = 'logical';
+SELECT pg_reload_conf();
+
 CREATE DATABASE microservices_demo_db_order
 WITH OWNER = tuannashtech
 ENCODING = 'UTF8'
